@@ -1,9 +1,14 @@
-import React from 'react';
-import styled from 'styled-components/macro';
+import React from "react";
+import styled from "styled-components/macro";
 
-import { COLORS, WEIGHTS } from '../../constants';
-import { formatPrice, pluralize, isNewShoe } from '../../utils';
-import Spacer from '../Spacer';
+import { COLORS, WEIGHTS } from "../../constants";
+import { formatPrice, pluralize, isNewShoe } from "../../utils";
+import Spacer from "../Spacer";
+
+const backgroundByVariant = {
+  "on-sale": "red",
+  "new-release": "dodgerblue",
+};
 
 const ShoeCard = ({
   slug,
@@ -31,19 +36,27 @@ const ShoeCard = ({
       ? 'new-release'
       : 'default'
 
+  console.log(backgroundByVariant[variant]);
+
   return (
     <Link href={`/shoe/${slug}`}>
       <Wrapper>
         <ImageWrapper>
+          {(variant === "on-sale" || variant === "new-release") && (
+            <Flag variant={variant}>
+              {variant === "new-release" ? "Just released!" : "Sale"}
+            </Flag>
+          )}
           <Image alt="" src={imageSrc} />
         </ImageWrapper>
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          <Price isOnSale={!!salePrice}>{formatPrice(price)}</Price>
         </Row>
         <Row>
-          <ColorInfo>{pluralize('Color', numOfColors)}</ColorInfo>
+          <ColorInfo>{pluralize("Color", numOfColors)}</ColorInfo>
+          {!!salePrice && <SalePrice>{formatPrice(salePrice)}</SalePrice>}
         </Row>
       </Wrapper>
     </Link>
@@ -51,8 +64,34 @@ const ShoeCard = ({
 };
 
 const Link = styled.a`
+  flex: 1 1 300px;
   text-decoration: none;
   color: inherit;
+  max-width: 300px;
+  position: relative;
+`;
+
+const Flag = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px 8px;
+  border: none;
+  background: ${(props) => backgroundByVariant[props.variant]};
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: white;
+  border-radius: 4px;
+
+  &:focus {
+    outline-offset: 2px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
 `;
 
 const Wrapper = styled.article``;
@@ -61,9 +100,15 @@ const ImageWrapper = styled.div`
   position: relative;
 `;
 
-const Image = styled.img``;
+const Image = styled.img`
+  width: 100%;
+`;
 
 const Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
   font-size: 1rem;
 `;
 
@@ -72,7 +117,10 @@ const Name = styled.h3`
   color: ${COLORS.gray[900]};
 `;
 
-const Price = styled.span``;
+const Price = styled.span`
+  display: block;
+  text-decoration: ${(props) => (props.isOnSale ? "line-through" : "none")};
+`;
 
 const ColorInfo = styled.p`
   color: ${COLORS.gray[700]};
